@@ -202,7 +202,7 @@ Dear ${customerName},
 Your ThermoSafe container (ID: ${containerId}) has been successfully registered.
 
 
-Dashboard: https://cmrhyd.up.railways.app/login
+Dashboard: https://cmrhyd.up.railway.app/login
 
 
 Email: ${email}
