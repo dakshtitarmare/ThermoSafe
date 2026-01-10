@@ -99,6 +99,13 @@ const ThermoSafeHome = () => {
     sessionStorage.clear();
     navigate('/login');
   };
+  const handleAdminLoginClick = () => {
+    // Double clear before navigating to login
+    localStorage.removeItem('thermosafe_user');
+    sessionStorage.clear();
+    navigate('/admin');
+  };
+  
 
   // Handle dashboard navigation
   const handleDashboardClick = () => {
@@ -293,7 +300,7 @@ const ThermoSafeHome = () => {
               </button>
               
               <button
-                onClick={handleLoginClick}
+                onClick={handleAdminLoginClick}
                 className="px-8 py-4 bg-gray-800 border border-gray-700 text-gray-300 font-semibold rounded-xl hover:bg-gray-700 transition-all duration-300"
               >
                 Admin Portal

@@ -166,29 +166,35 @@ const ThermoSafeDashboard = () => {
       const subject = isSpike 
         ? `🚨 CRITICAL: Temperature Spike Detected - ${temperature.toFixed(1)}°C` 
         : `⚠️ ALERT: Temperature Deviation Detected - ${temperature.toFixed(1)}°C`;
-
+  
       const message = `
-Temperature Alert Details:
-
-🌡️ CURRENT TEMPERATURE: ${temperature.toFixed(1)}°C
-${baseline ? `📊 BASELINE TEMPERATURE: ${baseline.toFixed(1)}°C` : ''}
-📈 DEVIATION: ${deviation > 0 ? '+' : ''}${deviation.toFixed(1)}°C
-🚨 ALERT TYPE: ${isSpike ? 'SUDDEN SPIKE (≥5°C)' : 'BASELINE DEVIATION (±5°C)'}
-⏰ TIME: ${new Date().toLocaleString()}
-
-${isSpike 
-  ? '🚨 IMMEDIATE ACTION REQUIRED:\n1. Check cooling system\n2. Contact emergency maintenance\n3. Activate backup cooling'
-  : '⚠️ RECOMMENDED ACTION:\n1. Monitor temperature closely\n2. Check cooling system operation\n3. Review temperature history on dashboard'
-}
-
-View real-time data on your ThermoSafe Dashboard.
-
-Best regards,
-ThermoSafe Team
-      `;
-
+  Temperature Alert Details:
+  
+  🌡️ CURRENT TEMPERATURE: ${temperature.toFixed(1)}°C
+  ${baseline ? `📊 BASELINE TEMPERATURE: ${baseline.toFixed(1)}°C` : ''}
+  📈 DEVIATION: ${deviation > 0 ? '+' : ''}${deviation.toFixed(1)}°C
+  🚨 ALERT TYPE: ${isSpike ? 'SUDDEN SPIKE (≥5°C)' : 'BASELINE DEVIATION (±5°C)'}
+  ⏰ TIME: ${new Date().toLocaleString()}
+  
+  ${isSpike 
+    ? '🚨 IMMEDIATE ACTION REQUIRED:\n1. Check cooling system\n2. Contact emergency maintenance\n3. Activate backup cooling'
+    : '⚠️ RECOMMENDED ACTION:\n1. Monitor temperature closely\n2. Check cooling system operation\n3. Review temperature history on dashboard'
+  }
+  
+  View real-time data on your ThermoSafe Dashboard.
+  
+  Best regards,
+  ThermoSafe Team
+        `;
+  
       console.log('Sending Email to:', userEmail, 'Subject:', subject);
-
+      console.log('Request URL:', `${BACKEND_URL}/send-email`);
+      console.log('Request Body:', {
+        to: userEmail,
+        subject: subject,
+        message: message
+      });
+  
       const response = await fetch(`${BACKEND_URL}/send-email`, {
         method: 'POST',
         headers: { 
@@ -200,8 +206,13 @@ ThermoSafe Team
           message: message
         })
       });
-
+  
+      // Log response status
+      console.log('Response Status:', response.status);
+      console.log('Response Status Text:', response.statusText);
+  
       const result = await response.json();
+      console.log('Full Response:', result);
       
       if (result.success) {
         console.log('Email sent successfully:', result.msg);
@@ -212,10 +223,11 @@ ThermoSafe Team
         sendDashboardAlert(`Failed to send email: ${result.msg || 'Unknown error'}`, 'error');
         return { success: false, error: result.msg };
       }
-
+  
     } catch (error) {
       console.error('Error sending email:', error);
-      sendDashboardAlert('Failed to send email: Network error', 'error');
+      console.error('Error stack:', error.stack);
+      sendDashboardAlert(`Failed to send email: ${error.message}`, 'error');
       return { success: false, error: error.message };
     }
   };
@@ -719,79 +731,71 @@ ThermoSafe Team
       />
       
       {/* Header */}
-      <motion.header 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 bg-gray-800/80 backdrop-blur-lg border-b border-gray-700/50 z-50 px-4 sm:px-6 py-3 sm:py-4"
-      >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-lg blur opacity-30"></div>
-              <div className="relative bg-gray-800 rounded-lg px-3 sm:px-4 py-1 sm:py-2">
-                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                  ThermoSafe Pro
-                </h1>
-                <p className="text-xs text-gray-400">Real-time Temperature Monitoring</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <NextReadingIndicator />
-              
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => fetchFirebaseData(true)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors text-sm"
-              >
-                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
-                <span className="text-sm">Refresh</span>
-              </motion.button>
-
-              {/* Test buttons for debugging - remove in production */}
-              {process.env.NODE_ENV === 'development' && (
-                <>
-                  <button
-                    onClick={testSMS}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-sm"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    Test SMS
-                  </button>
-                  <button
-                    onClick={testEmail}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    Test Email
-                  </button>
-                </>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                {isConnected ? (
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
-                  </motion.div>
-                ) : (
-                  <WifiOff className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
-                )}
-                <span className="text-xs sm:text-sm">
-                  {isConnected ? 'Connected' : 'Disconnected'}
-                </span>
-              </div>
-            </div>
-          </div>
+     {/* Header */}
+<motion.header 
+  initial={{ y: -20, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  className="sticky top-0 bg-gray-800/80 backdrop-blur-lg border-b border-gray-700/50 z-50 px-4 sm:px-6 py-3 sm:py-4"
+>
+  <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="flex items-center gap-3">
+      <div className="relative">
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-lg blur opacity-30"></div>
+        <div className="relative bg-gray-800 rounded-lg px-3 sm:px-4 py-1 sm:py-2">
+          <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+            ThermoSafe Pro
+          </h1>
+          <p className="text-xs text-gray-400">Real-time Temperature Monitoring</p>
         </div>
-      </motion.header>
+      </div>
+    </div>
+    
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <NextReadingIndicator />
+        
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => fetchFirebaseData(true)}
+          className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors text-sm"
+        >
+          <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
+          <span className="text-sm">Refresh</span>
+        </motion.button>
+
+        {/* Test Email Button - NEW */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => testEmail()}
+          className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors text-sm"
+        >
+          <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span className="text-sm">Test Email Connection</span>
+        </motion.button>
+      </div>
+      
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {isConnected ? (
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+            </motion.div>
+          ) : (
+            <WifiOff className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
+          )}
+          <span className="text-xs sm:text-sm">
+            {isConnected ? 'Connected' : 'Disconnected'}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</motion.header>
 
       {/* User Info Banner */}
       {userEmail && (

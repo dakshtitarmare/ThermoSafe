@@ -192,50 +192,99 @@ const AdminDashboard = () => {
   };
 
   // Send email notification (stub function for backend integration)
-  const sendEmailNotification = async (
-    email,
-    customerName,
-    containerId,
-    password
-  ) => {
-    try {
-      const subject = `Welcome to ThermoSafe - Your Container ${containerId} is Ready!`;
-      const body = `
+  // Send email notification - FIXED VERSION
+const sendEmailNotification = async (email, customerName, containerId, password) => {
+  try {
+    const subject = `Welcome to ThermoSafe - Your Container ${containerId} is Ready!`;
+    const message = `
 Dear ${customerName},
 
 Your ThermoSafe container (ID: ${containerId}) has been successfully registered.
 
-Login Credentials:
-- Email: ${email}
-- Password: ${password}
 
-Access your dashboard at: [Dashboard URL]
+Dashboard: https://cmrhyd.up.railways.app/login
 
-For any assistance, please contact support.
+
+Email: ${email}
+Password: ${password}
+
+You can monitor your container's temperature in real-time on the dashboard.
+
+For support, please contact us.
 
 Best regards,
 ThermoSafe Team
-      `;
+`;
 
-      console.log("Email to be sent:");
-      console.log("Subject:", subject);
-      console.log("Body:", body);
+    console.log("📧 Sending email to:", email);
+    console.log("📝 Subject:", subject);
+    console.log("🌐 Backend URL:", 'https://c-mrbackend.vercel.app/send-email');
 
-      // In production, you would call your backend API here:
-      // const response = await fetch('/api/send-email', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ to: email, subject, body })
-      // });
+    // Call backend API with correct parameter names
+    const response = await fetch('https://c-mrbackend.vercel.app/send-email', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        to: email, 
+        subject: subject, 
+        message: message // Changed from 'body' to 'message'
+      })
+    });
 
-      toast.success(`Email notification prepared for ${email}`);
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log("✅ Email sent successfully:", result.msg);
+      toast.success(`Email sent to ${email}`);
       return true;
-    } catch (error) {
-      console.error("Error preparing email:", error);
+    } else {
+      console.error("❌ Email sending failed:", result.msg);
+      toast.error(`Failed to send email: ${result.msg}`);
       return false;
     }
-  };
+  } catch (error) {
+    console.error("❌ Error sending email:", error);
+    toast.error(`Error: ${error.message}`);
+    return false;
+  }
+};
+// Test email sending function
+const testEmailSending = async () => {
+  try {
+    // Show loading toast
+    toast.loading('Sending test email...', { id: 'test-email' });
+    
+    const testData = {
+      email: 'devdakshtit@gcoea.ac.in',
+      customerName: 'Test',
+      containerId: 'TS-TEST-001',
+      password: 'Test@123'
+    };
 
+    console.log('🧪 Testing email sending functionality...');
+    
+    const result = await sendEmailNotification(
+      testData.email,
+      testData.customerName,
+      testData.containerId,
+      testData.password
+    );
+
+    toast.dismiss('test-email');
+    
+    if (result) {
+      toast.success('Test email sent successfully! Check console for details.', {
+        duration: 5000
+      });
+    }
+  } catch (error) {
+    toast.dismiss('test-email');
+    console.error('Test email error:', error);
+    toast.error(`Test failed: ${error.message}`);
+  }
+};
   // Add new container to Firebase
   const addContainer = async () => {
     try {
@@ -632,6 +681,15 @@ ThermoSafe Team
                 <span className="hidden sm:inline">Add Container</span>
                 <span className="sm:hidden">Add</span>
               </button>
+                {/* ADD TEST EMAIL BUTTON HERE */}
+  {/* <button
+    onClick={testEmailSending}
+    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium"
+  >
+    <Mail className="w-4 h-4" />
+    <span className="hidden sm:inline">Test Email</span>
+    <span className="sm:hidden">Test Email</span>
+  </button> */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium"
@@ -641,6 +699,7 @@ ThermoSafe Team
                 <span className="hidden sm:inline">Logout</span>
                 <span className="sm:hidden">Logout</span>
               </button>
+             
             </div>
           </div>
         </div>
