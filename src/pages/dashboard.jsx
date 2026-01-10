@@ -608,7 +608,7 @@ const getLastReadingTime = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
+  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 overflow-x-hidden">
       {/* Toast Container */}
       <Toaster
         toastOptions={{
@@ -619,12 +619,13 @@ const getLastReadingTime = () => {
             border: '1px solid #374151',
             borderRadius: '0.75rem',
             padding: '16px',
-            maxWidth: '420px'
+            maxWidth: '90vw'
           },
         }}
         containerStyle={{
-          top: 20,
-          right: 20,
+          top: 16,
+          right: 16,
+          left: 16,
         }}
       />
       
@@ -632,14 +633,14 @@ const getLastReadingTime = () => {
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 bg-gray-800/80 backdrop-blur-lg border-b border-gray-700/50 z-50 px-6 py-4"
+        className="sticky top-0 bg-gray-800/80 backdrop-blur-lg border-b border-gray-700/50 z-50 px-4 sm:px-6 py-3 sm:py-4"
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-lg blur opacity-30"></div>
-              <div className="relative bg-gray-800 rounded-lg px-4 py-2">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+              <div className="relative bg-gray-800 rounded-lg px-3 sm:px-4 py-1 sm:py-2">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
                   ThermoSafe Pro
                 </h1>
                 <p className="text-xs text-gray-400">Real-time Temperature Monitoring</p>
@@ -647,32 +648,34 @@ const getLastReadingTime = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-6">
-            <NextReadingIndicator />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <NextReadingIndicator />
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => fetchFirebaseData(true)}
+                className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors text-sm"
+              >
+                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
+                <span className="text-sm">Refresh</span>
+              </motion.button>
+            </div>
             
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => fetchFirebaseData(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4 text-blue-400" />
-              <span className="text-sm">Refresh Now</span>
-            </motion.button>
-            
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {isConnected ? (
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <Wifi className="w-5 h-5 text-emerald-400" />
+                    <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
                   </motion.div>
                 ) : (
-                  <WifiOff className="w-5 h-5 text-rose-400" />
+                  <WifiOff className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
                 )}
-                <span className="text-sm">
+                <span className="text-xs sm:text-sm">
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
@@ -681,27 +684,29 @@ const getLastReadingTime = () => {
         </div>
       </motion.header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
         {/* Alerts History Panel */}
         {alerts.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-gradient-to-r from-rose-900/20 to-red-900/10 border border-rose-700/30 rounded-xl p-4 backdrop-blur-sm"
+            className="mb-4 sm:mb-6 bg-gradient-to-r from-rose-900/20 to-red-900/10 border border-rose-700/30 rounded-xl p-3 sm:p-4 backdrop-blur-sm"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <Bell className="w-5 h-5 text-rose-400" />
-              <h3 className="font-semibold text-rose-300">Recent Alerts</h3>
-              <span className="ml-auto text-sm text-rose-400">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
+                <h3 className="font-semibold text-rose-300 text-sm sm:text-base">Recent Alerts</h3>
+              </div>
+              <span className="ml-auto text-xs sm:text-sm text-rose-400">
                 {alerts.filter(a => a.priority === 'high').length} High Priority
               </span>
             </div>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
+            <div className="space-y-2 max-h-32 overflow-y-auto text-xs sm:text-sm">
               {alerts.slice(0, 3).map(alert => (
-                <div key={alert.id} className="flex items-center gap-3 text-sm p-2 bg-rose-900/20 rounded">
-                  <div className={`w-2 h-2 rounded-full ${alert.priority === 'high' ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`} />
-                  <span className="text-rose-200 flex-1">{alert.message}</span>
-                  <span className="text-rose-400 text-xs">{alert.time}</span>
+                <div key={alert.id} className="flex items-center gap-2 sm:gap-3 p-2 bg-rose-900/20 rounded">
+                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${alert.priority === 'high' ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`} />
+                  <span className="text-rose-200 flex-1 truncate">{alert.message}</span>
+                  <span className="text-rose-400 text-xs shrink-0">{alert.time}</span>
                 </div>
               ))}
             </div>
@@ -709,19 +714,19 @@ const getLastReadingTime = () => {
         )}
 
         {/* Current Temperature Display */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <motion.div
             whileHover={{ y: -2 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-6"
+            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-4 sm:p-6"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-200">Current Temperature</h3>
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="font-semibold text-gray-200 text-sm sm:text-base">Current Temperature</h3>
               <motion.div
                 animate={{ 
                   scale: sensorData.status === 'CRITICAL' ? [1, 1.2, 1] : 1,
                   transition: sensorData.status === 'CRITICAL' ? { repeat: Infinity, duration: 1 } : {}
                 }}
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                   sensorData.status === 'SAFE' ? 'bg-emerald-500/20 text-emerald-400' :
                   sensorData.status === 'WARNING' ? 'bg-amber-500/20 text-amber-400' :
                   'bg-rose-500/20 text-rose-400'
@@ -730,13 +735,13 @@ const getLastReadingTime = () => {
                 {sensorData.status}
               </motion.div>
             </div>
-            <div className="text-5xl font-bold text-gray-100 mb-2">
+            <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mb-1 sm:mb-2">
               {sensorData.internalTemp.toFixed(1)}°C
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               Last updated: {getLastReadingTime()}
               {getTimeUntilNextReading() && (
-                <span className="ml-2 text-blue-400">
+                <span className="ml-1 sm:ml-2 text-blue-400">
                   • Next in ~{getTimeUntilNextReading()}m
                 </span>
               )}
@@ -745,32 +750,32 @@ const getLastReadingTime = () => {
 
           <motion.div
             whileHover={{ y: -2 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-6"
+            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-4 sm:p-6"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-200">Data Points</h3>
-              <Activity className="w-5 h-5 text-blue-400" />
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="font-semibold text-gray-200 text-sm sm:text-base">Data Points</h3>
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
             </div>
-            <div className="text-5xl font-bold text-gray-100 mb-2">
+            <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mb-1 sm:mb-2">
               {chartData.length}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               {getDataRangeText()}
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -2 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-6"
+            className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-4 sm:p-6 sm:col-span-2 lg:col-span-1"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-200">Prediction</h3>
-              <Zap className="w-5 h-5 text-amber-400" />
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="font-semibold text-gray-200 text-sm sm:text-base">Prediction</h3>
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
             </div>
-            <div className="text-3xl font-bold text-gray-100 mb-2">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-100 mb-1 sm:mb-2">
               {aiPrediction.riskLevel} Risk
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500 line-clamp-2">
               {aiPrediction.recommendation}
             </div>
           </motion.div>
@@ -780,34 +785,34 @@ const getLastReadingTime = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <motion.div 
-            className="rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 p-6 relative overflow-hidden"
+            className="rounded-xl sm:rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 p-3 sm:p-4 md:p-6 relative overflow-hidden"
           >
             {/* Chart Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
               <div>
-                <h2 className="text-xl font-bold text-gray-100">Temperature History</h2>
-                <div className="flex items-center gap-3 mt-1">
-                  <p className="text-gray-500">Real-time readings from Firebase</p>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-100">Temperature History</h2>
+                <div className="flex items-center gap-2 sm:gap-3 mt-1">
+                  <p className="text-xs sm:text-sm text-gray-500">Real-time Firebase data</p>
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="w-2 h-2 rounded-full bg-emerald-500"
+                    className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500"
                   />
-                  <span className="text-xs text-emerald-400">Live Updates</span>
+                  <span className="text-xs text-emerald-400">Live</span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-4">
-                <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                <div className="flex gap-1 sm:gap-2">
                   {['24h', '6h', '1h'].map((period) => (
                     <motion.button
                       key={period}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-3 py-1 rounded-lg text-sm ${activeTab === period ? 'bg-blue-500 text-white' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'}`}
+                      className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm ${activeTab === period ? 'bg-blue-500 text-white' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'}`}
                       onClick={() => setActiveTab(period)}
                     >
                       {period}
@@ -826,18 +831,18 @@ const getLastReadingTime = () => {
             
             {/* Main Chart */}
             {isLoading && !hasInitialDataRef.current ? (
-              <div className="h-96 flex flex-col items-center justify-center">
-                <div className="relative mb-6">
-                  <div className="w-24 h-24 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+              <div className="h-64 sm:h-80 md:h-96 flex flex-col items-center justify-center">
+                <div className="relative mb-4 sm:mb-6">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Thermometer className="w-8 h-8 text-blue-400" />
+                    <Thermometer className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
                   </div>
                 </div>
-                <p className="text-gray-500">Loading temperature data...</p>
-                <p className="text-sm text-gray-600 mt-2">Connecting to Firebase Realtime Database</p>
+                <p className="text-sm text-gray-500 text-center px-4">Loading temperature data...</p>
+                <p className="text-xs text-gray-600 mt-2 text-center px-4">Connecting to Firebase Realtime Database</p>
               </div>
             ) : chartData.length > 0 ? (
-              <div className="h-96">
+              <div className="h-64 sm:h-80 md:h-96">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <defs>
@@ -929,31 +934,31 @@ const getLastReadingTime = () => {
                 </ResponsiveContainer>
                 
                 {/* Data Points Legend */}
-                <div className="flex items-center justify-center gap-6 mt-4 text-xs text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500" />
-                    <span>Temperature Reading</span>
+                <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mt-3 sm:mt-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500" />
+                    <span>Temperature</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-white border border-blue-500" />
-                    <span>Latest Reading</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-white border border-blue-500" />
+                    <span>Latest</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500" />
                     <span>Out of Range</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="h-96 flex flex-col items-center justify-center">
-                <div className="relative mb-6">
-                  <Thermometer className="w-16 h-16 text-gray-600" />
+              <div className="h-64 sm:h-80 md:h-96 flex flex-col items-center justify-center px-4">
+                <div className="relative mb-4 sm:mb-6">
+                  <Thermometer className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600" />
                 </div>
-                <p className="text-gray-500">No temperature data found</p>
-                <p className="text-sm text-gray-600 mt-2">Waiting for ESP32 to send data to Firebase</p>
+                <p className="text-sm text-gray-500 text-center">No temperature data found</p>
+                <p className="text-xs text-gray-600 mt-2 text-center">Waiting for ESP32 to send data to Firebase</p>
                 <button
                   onClick={() => fetchFirebaseData(true)}
-                  className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                  className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors text-sm"
                 >
                   Check for Data
                 </button>
@@ -961,17 +966,17 @@ const getLastReadingTime = () => {
             )}
             
             {/* Chart Footer */}
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-700/30">
-              <div className="text-sm text-gray-500">
-                Data Source: Firebase Realtime Database
-                <span className="mx-2">•</span>
-                Polling: Every 10 seconds
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-700/30 gap-3 sm:gap-0">
+              <div className="text-xs sm:text-sm text-gray-500">
+                Data Source: Firebase
+                <span className="mx-1 sm:mx-2">•</span>
+                Polling: 10s
               </div>
               
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-gray-400">Auto-refresh active</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-gray-400">Auto-refresh</span>
                 </div>
                 
                 <button
@@ -994,7 +999,7 @@ const getLastReadingTime = () => {
                       });
                     }
                   }}
-                  className="px-3 py-1 text-sm bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors"
+                  className="px-3 py-1 text-xs sm:text-sm bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors"
                   disabled={chartData.length === 0}
                 >
                   Export CSV
@@ -1009,19 +1014,19 @@ const getLastReadingTime = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center text-sm text-gray-500 border-t border-gray-800/50 pt-6"
+          className="text-center text-xs sm:text-sm text-gray-500 border-t border-gray-800/50 pt-4 sm:pt-6"
         >
-          <p>Real-time Monitoring System • ESP32 → Firebase Realtime Database • Instant Updates</p>
-          <p className="mt-2">Alert System: Toast → SMS → Email Escalation • Checks for new data every 10 seconds</p>
-          <div className="flex items-center justify-center gap-4 mt-4 text-xs">
+          <p>Real-time Monitoring System • ESP32 → Firebase • Instant Updates</p>
+          <p className="mt-1 sm:mt-2 text-xs">Alert System: Toast → SMS → Email Escalation</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-4 mt-3 sm:mt-4 text-xs">
             <span className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
-              {isConnected ? 'Connected to Firebase' : 'Disconnected from Firebase'}
+              <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
+              {isConnected ? 'Connected' : 'Disconnected'}
             </span>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>Data Points: {chartData.length}</span>
-            <span>•</span>
-            <span>System Time: {currentTime.toLocaleTimeString()}</span>
+            <span className="hidden sm:inline">•</span>
+            <span>System Time: {currentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
           </div>
         </motion.footer>
       </main>
