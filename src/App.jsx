@@ -4,6 +4,7 @@ import AdminDashboard from "./pages/adminDashboard"
 // import Dashboard1 from "./pages/dashboard1"
 import Login from "./pages/Login"
 import ThermoSafeHome from "./pages/ThermosafeHome"
+import AdminLogin from "./pages/adminLoginTemp"
 function App() {
   return (
     <BrowserRouter>
@@ -21,6 +22,8 @@ function App() {
         } />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/login2" element={<AdminLogin />} />
+
         {/* <Route path="/dashboard1" element= {<Dashboard1/>}/> */}
 
       </Routes>

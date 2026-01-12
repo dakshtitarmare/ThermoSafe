@@ -40,6 +40,8 @@ import { toast, Toaster } from "react-hot-toast";
 import { ref, set, push, onValue, remove, update } from "firebase/database";
 import { database } from "../config/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import DeveloperFooter from "../component/developerFooter";
+
 const AdminDashboard = () => {
   // States
   const [containers, setContainers] = useState([]);
@@ -69,17 +71,14 @@ const AdminDashboard = () => {
     fetchContainers();
     fetchUsers();
   }, []);
+
   const handleLogout = () => {
-    // Clear any stored authentication data if needed
     localStorage.removeItem("thermosafe_user");
     sessionStorage.removeItem("thermosafe_user");
-
-    // Optional: Show confirmation toast
     toast.success("Logged out successfully");
-
-    // Navigate to home page
     navigate("/");
   };
+
   // Fetch all containers from Firebase
   const fetchContainers = () => {
     try {
@@ -89,7 +88,6 @@ const AdminDashboard = () => {
       const unsubscribe = onValue(containersRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          // Convert Firebase object to array
           const containersArray = Object.entries(data).map(
             ([key, container]) => ({
               firebaseKey: key,
@@ -97,7 +95,6 @@ const AdminDashboard = () => {
             })
           );
 
-          // Sort by creation date (newest first)
           containersArray.sort(
             (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
           );
@@ -151,7 +148,6 @@ const AdminDashboard = () => {
       containersArray.reduce((sum, c) => sum + (c.alerts || 0), 0)
     );
 
-    // Get unique customers
     const uniqueEmails = [
       ...new Set(
         containersArray
@@ -184,27 +180,22 @@ const AdminDashboard = () => {
     if (!customerName || customerName.trim() === "") {
       return "User@123";
     }
-    // Take first word of the name and capitalize first letter
     const firstName = customerName.trim().split(" ")[0];
     const capitalizedName =
       firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
     return `${capitalizedName}@123`;
   };
 
-  // Send email notification (stub function for backend integration)
-  // Send email notification - FIXED VERSION
-const sendEmailNotification = async (email, customerName, containerId, password) => {
-  try {
-    const subject = `Welcome to ThermoSafe - Your Container ${containerId} is Ready!`;
-    const message = `
+  // Send email notification
+  const sendEmailNotification = async (email, customerName, containerId, password) => {
+    try {
+      const subject = `Welcome to ThermoSafe - Your Container ${containerId} is Ready!`;
+      const message = `
 Dear ${customerName},
 
 Your ThermoSafe container (ID: ${containerId}) has been successfully registered.
 
-
 Dashboard: https://cmrhyd.up.railway.app/login
-
-
 Email: ${email}
 Password: ${password}
 
@@ -216,101 +207,89 @@ Best regards,
 ThermoSafe Team
 `;
 
-    console.log("📧 Sending email to:", email);
-    console.log("📝 Subject:", subject);
-    console.log("🌐 Backend URL:", 'https://c-mrbackend.vercel.app/send-email');
+      const response = await fetch('https://c-mrbackend.vercel.app/send-email', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          to: email, 
+          subject: subject, 
+          message: message
+        })
+      });
 
-    // Call backend API with correct parameter names
-    const response = await fetch('https://c-mrbackend.vercel.app/send-email', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        to: email, 
-        subject: subject, 
-        message: message // Changed from 'body' to 'message'
-      })
-    });
-
-    const result = await response.json();
-    
-    if (result.success) {
-      console.log("✅ Email sent successfully:", result.msg);
-      toast.success(`Email sent to ${email}`);
-      return true;
-    } else {
-      console.error("❌ Email sending failed:", result.msg);
-      toast.error(`Failed to send email: ${result.msg}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log("✅ Email sent successfully:", result.msg);
+        toast.success(`Email sent to ${email}`);
+        return true;
+      } else {
+        console.error("❌ Email sending failed:", result.msg);
+        toast.error(`Failed to send email: ${result.msg}`);
+        return false;
+      }
+    } catch (error) {
+      console.error("❌ Error sending email:", error);
+      toast.error(`Error: ${error.message}`);
       return false;
     }
-  } catch (error) {
-    console.error("❌ Error sending email:", error);
-    toast.error(`Error: ${error.message}`);
-    return false;
-  }
-};
-// Test email sending function
-const testEmailSending = async () => {
-  try {
-    // Show loading toast
-    toast.loading('Sending test email...', { id: 'test-email' });
-    
-    const testData = {
-      email: 'devdakshtit@gcoea.ac.in',
-      customerName: 'Test',
-      containerId: 'TS-TEST-001',
-      password: 'Test@123'
-    };
+  };
 
-    console.log('🧪 Testing email sending functionality...');
-    
-    const result = await sendEmailNotification(
-      testData.email,
-      testData.customerName,
-      testData.containerId,
-      testData.password
-    );
+  // Test email sending function
+  const testEmailSending = async () => {
+    try {
+      toast.loading('Sending test email...', { id: 'test-email' });
+      
+      const testData = {
+        email: 'devdakshtit@gcoea.ac.in',
+        customerName: 'Test',
+        containerId: 'TS-TEST-001',
+        password: 'Test@123'
+      };
 
-    toast.dismiss('test-email');
-    
-    if (result) {
-      toast.success('Test email sent successfully! Check console for details.', {
-        duration: 5000
-      });
+      const result = await sendEmailNotification(
+        testData.email,
+        testData.customerName,
+        testData.containerId,
+        testData.password
+      );
+
+      toast.dismiss('test-email');
+      
+      if (result) {
+        toast.success('Test email sent successfully!', {
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast.dismiss('test-email');
+      console.error('Test email error:', error);
+      toast.error(`Test failed: ${error.message}`);
     }
-  } catch (error) {
-    toast.dismiss('test-email');
-    console.error('Test email error:', error);
-    toast.error(`Test failed: ${error.message}`);
-  }
-};
+  };
+
   // Add new container to Firebase
   const addContainer = async () => {
     try {
-      // Validate inputs
       const validationErrors = [];
       if (!newContainer.id.trim()) validationErrors.push("Container ID");
-      if (!newContainer.customerEmail.trim())
-        validationErrors.push("Customer Email");
-      if (!newContainer.customerPhone.trim())
-        validationErrors.push("Customer Phone");
-      if (!newContainer.customerName.trim())
-        validationErrors.push("Customer Name");
+      if (!newContainer.customerEmail.trim()) validationErrors.push("Customer Email");
+      if (!newContainer.customerPhone.trim()) validationErrors.push("Customer Phone");
+      if (!newContainer.customerName.trim()) validationErrors.push("Customer Name");
 
       if (validationErrors.length > 0) {
         toast.error(`Please fill in: ${validationErrors.join(", ")}`);
         return;
       }
 
-      // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(newContainer.customerEmail)) {
         toast.error("Please enter a valid email address");
         return;
       }
 
-      // Check if container ID already exists
       const existingContainer = containers.find(
         (c) => c.id === newContainer.id
       );
@@ -319,10 +298,8 @@ const testEmailSending = async () => {
         return;
       }
 
-      // Generate password as per requirement
       const userPassword = generatePassword(newContainer.customerName);
 
-      // Prepare container data
       const containerData = {
         id: newContainer.id,
         customerEmail: newContainer.customerEmail.toLowerCase(),
@@ -337,11 +314,9 @@ const testEmailSending = async () => {
         temperatureRange: newContainer.temperatureRange || { min: 2, max: 8 },
       };
 
-      // Add container to Firebase with a unique key
       const newContainerRef = push(ref(database, "containers"));
       await set(newContainerRef, containerData);
 
-      // Create user account with generated password
       await createUserAccount(
         newContainer.customerEmail.toLowerCase(),
         newContainer.customerPhone,
@@ -350,7 +325,6 @@ const testEmailSending = async () => {
         userPassword
       );
 
-      // Prepare email notification
       await sendEmailNotification(
         newContainer.customerEmail.toLowerCase(),
         newContainer.customerName,
@@ -358,18 +332,17 @@ const testEmailSending = async () => {
         userPassword
       );
 
-      // Show success message
       toast.success(
         <div className="p-2">
-          <p className="font-bold text-green-700">
+          <p className="font-bold text-green-400">
             Container {newContainer.id} added successfully!
           </p>
-          <p className="text-sm mt-1">
+          <p className="text-sm mt-1 text-gray-300">
             User account created for {newContainer.customerEmail}
           </p>
-          <p className="text-sm">
+          <p className="text-sm text-gray-300">
             Password:{" "}
-            <span className="font-mono bg-yellow-100 px-2 py-1 rounded">
+            <span className="font-mono bg-yellow-900 px-2 py-1 rounded text-yellow-200">
               {userPassword}
             </span>
           </p>
@@ -377,7 +350,6 @@ const testEmailSending = async () => {
         { duration: 8000 }
       );
 
-      // Reset form
       setNewContainer({
         id: "",
         customerEmail: "",
@@ -407,7 +379,7 @@ const testEmailSending = async () => {
         email: email,
         phone: phone,
         name: name,
-        password: password, // Using the generated password
+        password: password,
         role: "user",
         containerId: containerId,
         createdAt: new Date().toISOString(),
@@ -415,7 +387,6 @@ const testEmailSending = async () => {
         lastLogin: null,
       };
 
-      // Store user under users/{sanitizedEmail}
       const userRef = ref(database, `users/${sanitizedEmail}`);
       await set(userRef, userData);
 
@@ -423,32 +394,23 @@ const testEmailSending = async () => {
         email: email,
         password: password,
         containerId: containerId,
-        firebasePath: `users/${sanitizedEmail}`,
       });
     } catch (error) {
       console.error("Error creating user:", error);
-      throw error; // Re-throw to handle in parent function
+      throw error;
     }
   };
 
   // Delete container from Firebase
   const deleteContainer = async (containerId, firebaseKey) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete container ${containerId}? This action cannot be undone.`
-      )
-    ) {
+    if (!window.confirm(`Are you sure you want to delete container ${containerId}?`)) {
       return;
     }
 
     try {
-      // Delete the container
       const containerRef = ref(database, `containers/${firebaseKey}`);
       await remove(containerRef);
-
       toast.success(`Container ${containerId} deleted successfully`);
-
-      // Refresh the containers list
       fetchContainers();
     } catch (error) {
       console.error("Error deleting container:", error);
@@ -461,7 +423,6 @@ const testEmailSending = async () => {
     try {
       const containerRef = ref(database, `containers/${firebaseKey}/status`);
       await set(containerRef, newStatus);
-
       toast.success(`Container status updated to ${newStatus}`);
     } catch (error) {
       console.error("Error updating status:", error);
@@ -478,7 +439,6 @@ const testEmailSending = async () => {
       const userRef = ref(database, `users/${sanitizedEmail}/password`);
       await set(userRef, newPassword);
 
-      // Send email notification for password reset
       await sendEmailNotification(
         email,
         customerName,
@@ -488,12 +448,12 @@ const testEmailSending = async () => {
 
       toast.success(
         <div className="p-2">
-          <p className="font-bold">🔑 Password Reset</p>
-          <p className="text-sm mt-1">New password for {email}:</p>
-          <p className="font-mono bg-green-100 px-3 py-2 rounded-lg mt-2 text-center">
+          <p className="font-bold text-green-400">🔑 Password Reset</p>
+          <p className="text-sm mt-1 text-gray-300">New password for {email}:</p>
+          <p className="font-mono bg-green-900 px-3 py-2 rounded-lg mt-2 text-center text-green-200">
             {newPassword}
           </p>
-          <p className="text-xs text-gray-600 mt-1">
+          <p className="text-xs text-gray-400 mt-1">
             Email notification sent to user
           </p>
         </div>,
@@ -507,11 +467,7 @@ const testEmailSending = async () => {
 
   // Delete user account
   const deleteUserAccount = async (email) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete user account for ${email}?`
-      )
-    ) {
+    if (!window.confirm(`Are you sure you want to delete user account for ${email}?`)) {
       return;
     }
 
@@ -519,7 +475,6 @@ const testEmailSending = async () => {
       const sanitizedEmail = sanitizeEmail(email);
       const userRef = ref(database, `users/${sanitizedEmail}`);
       await remove(userRef);
-
       toast.success(`User account for ${email} deleted successfully`);
       fetchUsers();
     } catch (error) {
@@ -528,17 +483,17 @@ const testEmailSending = async () => {
     }
   };
 
-  // Get status color
+  // Get status color for dark theme
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "active":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-green-900/30 text-green-400 border-green-700";
       case "warning":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-yellow-900/30 text-yellow-400 border-yellow-700";
       case "critical":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "bg-red-900/30 text-red-400 border-red-700";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-gray-800 text-gray-400 border-gray-700";
     }
   };
 
@@ -581,35 +536,39 @@ const testEmailSending = async () => {
     ].filter((item) => item.value > 0);
   };
 
-  // Stats data
+  // Stats data for dark theme
   const statsData = [
     {
       name: "Total Containers",
       value: totalContainers,
       icon: Package,
-      color: "text-blue-600",
-      bgColor: "from-blue-50 to-indigo-50",
+      color: "text-blue-400",
+      bgColor: "from-blue-900/20 to-blue-800/20",
+      borderColor: "border-blue-700/30",
     },
     {
       name: "Active",
       value: activeContainers,
       icon: CheckCircle,
-      color: "text-green-600",
-      bgColor: "from-green-50 to-emerald-50",
+      color: "text-green-400",
+      bgColor: "from-green-900/20 to-emerald-900/20",
+      borderColor: "border-green-700/30",
     },
     {
       name: "Customers",
       value: customers,
       icon: Users,
-      color: "text-purple-600",
-      bgColor: "from-purple-50 to-violet-50",
+      color: "text-purple-400",
+      bgColor: "from-purple-900/20 to-violet-900/20",
+      borderColor: "border-purple-700/30",
     },
     {
       name: "Total Users",
       value: users.length,
       icon: UserPlus,
-      color: "text-pink-600",
-      bgColor: "from-pink-50 to-rose-50",
+      color: "text-pink-400",
+      bgColor: "from-pink-900/20 to-rose-900/20",
+      borderColor: "border-pink-700/30",
     },
   ];
 
@@ -626,7 +585,7 @@ const testEmailSending = async () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
       <Toaster
         position="top-right"
         toastOptions={{
@@ -643,75 +602,76 @@ const testEmailSending = async () => {
       />
 
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-gray-800/80 backdrop-blur-lg border-b border-gray-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <div onClick={() => (window.location.href = "/")}>           
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
                 ThermoSafe Admin Dashboard
               </h1>
-              <p className="text-gray-600 text-sm sm:text-base mt-1">
+              <p className="text-gray-400 text-sm sm:text-base mt-1">
                 Manage containers, users, and monitor temperature data
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setShowUsersModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all font-medium"
               >
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">View Users</span>
                 <span className="sm:hidden">Users</span>
               </button>
+              
+              <button
+                onClick={testEmailSending}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all font-medium"
+              >
+                <Mail className="w-4 h-4" />
+                <span className="hidden sm:inline">Test Email</span>
+                <span className="sm:hidden">Test Email</span>
+              </button>
+              
               <button
                 onClick={fetchContainers}
                 disabled={statsLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all font-medium disabled:opacity-50"
               >
                 <RefreshCw
                   className={`w-4 h-4 ${statsLoading ? "animate-spin" : ""}`}
                 />
                 <span className="hidden sm:inline">Refresh</span>
               </button>
+              
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 sm:px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-all font-medium shadow-md"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg transition-all font-medium shadow-lg"
               >
                 <Plus className="w-5 h-5" />
                 <span className="hidden sm:inline">Add Container</span>
                 <span className="sm:hidden">Add</span>
               </button>
-                {/* ADD TEST EMAIL BUTTON HERE */}
-  {/* <button
-    onClick={testEmailSending}
-    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium"
-  >
-    <Mail className="w-4 h-4" />
-    <span className="hidden sm:inline">Test Email</span>
-    <span className="sm:hidden">Test Email</span>
-  </button> */}
+              
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all font-medium"
               >
-                <LogOut className="w-4 h-4" />{" "}
-                {/* Add LogOut import from lucide-react */}
+                <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Logout</span>
                 <span className="sm:hidden">Logout</span>
               </button>
-             
             </div>
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Stats Cards */}
+        {/* Stats Cards - Dark Theme */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {statsData.map((stat, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all border hover:border-blue-200"
+              className={`bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 hover:shadow-2xl transition-all border ${stat.borderColor} hover:scale-[1.02]`}
             >
               <div className="flex items-center justify-between">
                 <div
@@ -720,10 +680,10 @@ const testEmailSending = async () => {
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  <p className="text-2xl sm:text-3xl font-bold text-white">
                     {stat.value}
                   </p>
-                  <p className="text-sm text-gray-600">{stat.name}</p>
+                  <p className="text-sm text-gray-400">{stat.name}</p>
                 </div>
               </div>
             </div>
@@ -731,18 +691,18 @@ const testEmailSending = async () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* Containers Table */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+          {/* Containers Table - Dark Theme */}
+          <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-gray-700/50">
+            <div className="p-4 sm:p-6 border-b border-gray-700/50 bg-gradient-to-r from-blue-900/20 to-indigo-900/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Package className="w-6 h-6 text-blue-600" />
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  <Package className="w-6 h-6 text-blue-400" />
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">
                     Containers
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-400">
                     {containers.length} containers
                   </span>
                   <span
@@ -756,16 +716,16 @@ const testEmailSending = async () => {
 
             {loading ? (
               <div className="p-8 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">Loading containers...</p>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                <p className="mt-2 text-gray-400">Loading containers...</p>
               </div>
             ) : containers.length === 0 ? (
               <div className="p-8 text-center">
-                <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No containers found</p>
+                <Package className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">No containers found</p>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
+                  className="mt-4 text-blue-400 hover:text-blue-300 font-medium"
                 >
                   Add your first container
                 </button>
@@ -773,51 +733,51 @@ const testEmailSending = async () => {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-900/50">
                     <tr>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Container
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-700/50">
                     {containers.slice(0, 10).map((container) => (
                       <tr
                         key={container.firebaseKey}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-gray-700/30 transition-colors"
                       >
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
+                              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                             </div>
                             <div>
-                              <div className="text-sm font-semibold text-gray-900">
+                              <div className="text-sm font-semibold text-white">
                                 {container.id}
                               </div>
-                              <div className="text-xs text-gray-400 mt-1">
+                              <div className="text-xs text-gray-500 mt-1">
                                 {formatDate(container.createdAt)}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-4 sm:px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-white">
                             {container.customerName || "N/A"}
                           </div>
-                          <div className="text-xs text-gray-500 truncate max-w-[150px]">
+                          <div className="text-xs text-gray-400 truncate max-w-[150px]">
                             {container.customerEmail}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-500">
                             {container.customerPhone}
                           </div>
                         </td>
@@ -830,7 +790,7 @@ const testEmailSending = async () => {
                             >
                               {container.status?.toUpperCase() || "INACTIVE"}
                             </span>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
                               <span>Uptime: {container.uptime || "N/A"}</span>
                               <span>•</span>
                               <span>Alerts: {container.alerts || 0}</span>
@@ -841,7 +801,7 @@ const testEmailSending = async () => {
                           <div className="flex items-center justify-end gap-1 sm:gap-2">
                             <button
                               onClick={() => setSelectedContainer(container)}
-                              className="text-blue-600 hover:text-blue-900 p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="text-blue-400 hover:text-blue-300 p-1.5 hover:bg-blue-900/20 rounded-lg transition-colors"
                               title="View Details"
                             >
                               <Eye className="w-4 h-4" />
@@ -853,7 +813,7 @@ const testEmailSending = async () => {
                                   "active"
                                 )
                               }
-                              className="text-green-600 hover:text-green-900 p-1.5 hover:bg-green-50 rounded-lg transition-colors"
+                              className="text-green-400 hover:text-green-300 p-1.5 hover:bg-green-900/20 rounded-lg transition-colors"
                               title="Set Active"
                             >
                               <CheckCircle className="w-4 h-4" />
@@ -865,7 +825,7 @@ const testEmailSending = async () => {
                                   container.customerName
                                 )
                               }
-                              className="text-purple-600 hover:text-purple-900 p-1.5 hover:bg-purple-50 rounded-lg transition-colors"
+                              className="text-purple-400 hover:text-purple-300 p-1.5 hover:bg-purple-900/20 rounded-lg transition-colors"
                               title="Reset Password"
                             >
                               <Key className="w-4 h-4" />
@@ -877,7 +837,7 @@ const testEmailSending = async () => {
                                   container.firebaseKey
                                 )
                               }
-                              className="text-red-600 hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors"
+                              className="text-red-400 hover:text-red-300 p-1.5 hover:bg-red-900/20 rounded-lg transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -892,12 +852,12 @@ const testEmailSending = async () => {
             )}
           </div>
 
-          {/* Analytics Sidebar */}
+          {/* Analytics Sidebar - Dark Theme */}
           <div className="space-y-6">
             {/* Status Distribution */}
-            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <BarChartIcon className="w-5 h-5 text-blue-600" />
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-6 border border-gray-700/50">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <BarChartIcon className="w-5 h-5 text-blue-400" />
                 Status Distribution
               </h3>
               <div className="h-48">
@@ -919,15 +879,22 @@ const testEmailSending = async () => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: '#1F2937',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#F3F4F6',
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Temperature Overview */}
-            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-6 border border-gray-700/50">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4">
                 Temperature Overview
               </h3>
               <ResponsiveContainer width="100%" height={200}>
@@ -944,10 +911,24 @@ const testEmailSending = async () => {
                       <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="time" fontSize={10} />
-                  <YAxis fontSize={10} />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="time" 
+                    fontSize={10} 
+                    stroke="#9CA3AF"
+                  />
+                  <YAxis 
+                    fontSize={10} 
+                    stroke="#9CA3AF"
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#1F2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#F3F4F6',
+                    }}
+                  />
                   <ReferenceLine
                     y={2}
                     stroke="#EF4444"
@@ -979,7 +960,7 @@ const testEmailSending = async () => {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-              <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-600">
+              <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                   <span>Internal</span>
@@ -996,28 +977,28 @@ const testEmailSending = async () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-6 border border-gray-700/50">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4">
                 Quick Actions
               </h3>
               <div className="space-y-3">
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
                 >
                   <Plus className="w-4 h-4" />
                   Add New Container
                 </button>
                 <button
                   onClick={() => setShowUsersModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                  className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
                 >
                   <Users className="w-4 h-4" />
                   View All Users
                 </button>
                 <button
                   onClick={fetchContainers}
-                  className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 px-4 rounded-lg transition-colors font-medium"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Refresh Data
@@ -1028,21 +1009,21 @@ const testEmailSending = async () => {
         </div>
       </div>
 
-      {/* Add Container Modal */}
+      {/* Add Container Modal - Dark Theme */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-white border-b px-4 sm:px-6 py-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-4 sm:px-6 py-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
                   Add New Container
                 </h2>
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="p-2 hover:bg-gray-700 rounded-xl transition-colors"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-500"
+                    className="w-6 h-6 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1066,7 +1047,7 @@ const testEmailSending = async () => {
               className="p-4 sm:p-6 space-y-6"
             >
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-gray-300">
                   Container ID <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -1078,14 +1059,14 @@ const testEmailSending = async () => {
                       id: e.target.value.toUpperCase(),
                     })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
                   placeholder="TS-001"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-gray-300">
                   Customer Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -1097,14 +1078,14 @@ const testEmailSending = async () => {
                       customerName: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                   placeholder="John Doe"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-gray-300">
                   Customer Email <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2 items-center">
@@ -1117,7 +1098,7 @@ const testEmailSending = async () => {
                         customerEmail: e.target.value,
                       })
                     }
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                     placeholder="customer@example.com"
                     required
                   />
@@ -1126,7 +1107,7 @@ const testEmailSending = async () => {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-gray-300">
                   Customer Phone <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2 items-center">
@@ -1139,7 +1120,7 @@ const testEmailSending = async () => {
                         customerPhone: e.target.value,
                       })
                     }
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                     placeholder="+91 9876543210"
                     required
                   />
@@ -1149,7 +1130,7 @@ const testEmailSending = async () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block text-sm font-semibold text-gray-700">
+                  <label className="block text-sm font-semibold text-gray-300">
                     Min Temp (°C)
                   </label>
                   <input
@@ -1164,14 +1145,14 @@ const testEmailSending = async () => {
                         },
                       })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                     min="-20"
                     max="20"
                     step="0.5"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-sm font-semibold text-gray-700">
+                  <label className="block text-sm font-semibold text-gray-300">
                     Max Temp (°C)
                   </label>
                   <input
@@ -1186,7 +1167,7 @@ const testEmailSending = async () => {
                         },
                       })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                     min="0"
                     max="30"
                     step="0.5"
@@ -1194,18 +1175,18 @@ const testEmailSending = async () => {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-4">
                 <div className="flex items-start gap-2">
-                  <Key className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <Key className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-blue-800 font-medium">
+                    <p className="text-sm text-blue-300 font-medium">
                       Password Rule:
                     </p>
-                    <p className="text-xs text-blue-700 mt-1">
+                    <p className="text-xs text-blue-400 mt-1">
                       Password will be automatically generated as:{" "}
                       <span className="font-mono">CustomerName@123</span>
                     </p>
-                    <p className="text-xs text-blue-700 mt-2">
+                    <p className="text-xs text-blue-400 mt-2">
                       Email notification will be sent to the customer with login
                       credentials.
                     </p>
@@ -1229,7 +1210,7 @@ const testEmailSending = async () => {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
+                  className="px-6 py-3 border border-gray-600 text-gray-300 rounded-xl hover:bg-gray-700 transition-all font-medium"
                 >
                   Cancel
                 </button>
@@ -1239,21 +1220,21 @@ const testEmailSending = async () => {
         </div>
       )}
 
-      {/* Users Modal */}
+      {/* Users Modal - Dark Theme */}
       {showUsersModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-white border-b px-6 py-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-6 py-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-white">
                   User Accounts ({users.length})
                 </h2>
                 <button
                   onClick={() => setShowUsersModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl"
+                  className="p-2 hover:bg-gray-700 rounded-xl"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-500"
+                    className="w-6 h-6 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1272,56 +1253,56 @@ const testEmailSending = async () => {
             <div className="p-6">
               {users.length === 0 ? (
                 <div className="text-center py-12">
-                  <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No user accounts found</p>
+                  <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No user accounts found</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gray-900/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Name
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Email
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Phone
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Container
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Password
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-700/50">
                       {users.map((user) => (
-                        <tr key={user.firebaseKey} className="hover:bg-gray-50">
+                        <tr key={user.firebaseKey} className="hover:bg-gray-700/30">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-white">
                               {user.name}
                             </div>
-                            <div className="text-xs text-gray-500 capitalize">
+                            <div className="text-xs text-gray-400 capitalize">
                               {user.role}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             {user.email}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             {user.phone}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             {user.containerId}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                            <code className="text-xs bg-gray-900 px-2 py-1 rounded text-gray-300">
                               {user.password}
                             </code>
                           </td>
@@ -1331,13 +1312,13 @@ const testEmailSending = async () => {
                                 onClick={() =>
                                   resetUserPassword(user.email, user.name)
                                 }
-                                className="text-blue-600 hover:text-blue-900"
+                                className="text-blue-400 hover:text-blue-300"
                               >
                                 Reset Password
                               </button>
                               <button
                                 onClick={() => deleteUserAccount(user.email)}
-                                className="text-red-600 hover:text-red-900 ml-4"
+                                className="text-red-400 hover:text-red-300 ml-4"
                               >
                                 Delete
                               </button>
@@ -1354,21 +1335,21 @@ const testEmailSending = async () => {
         </div>
       )}
 
-      {/* Container Details Modal */}
+      {/* Container Details Modal - Dark Theme */}
       {selectedContainer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-white border-b px-6 py-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-6 py-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-white">
                   Container Details
                 </h2>
                 <button
                   onClick={() => setSelectedContainer(null)}
-                  className="p-2 hover:bg-gray-100 rounded-xl"
+                  className="p-2 hover:bg-gray-700 rounded-xl"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-500"
+                    className="w-6 h-6 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1387,13 +1368,13 @@ const testEmailSending = async () => {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Container ID</p>
-                  <p className="font-semibold text-lg">
+                  <p className="text-sm text-gray-400">Container ID</p>
+                  <p className="font-semibold text-lg text-white">
                     {selectedContainer.id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="text-sm text-gray-400">Status</p>
                   <span
                     className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(
                       selectedContainer.status
@@ -1405,26 +1386,26 @@ const testEmailSending = async () => {
               </div>
 
               <div>
-                <p className="text-sm text-gray-500 mb-2">
+                <p className="text-sm text-gray-400 mb-2">
                   Customer Information
                 </p>
-                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="bg-gray-900/30 rounded-lg p-4 space-y-3">
                   <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-300">
                       {selectedContainer.customerEmail}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-300">
                       {selectedContainer.customerPhone}
                     </span>
                   </div>
                   {selectedContainer.customerName && (
                     <div>
-                      <span className="text-sm text-gray-600">Name:</span>
-                      <span className="text-sm font-medium ml-2">
+                      <span className="text-sm text-gray-500">Name:</span>
+                      <span className="text-sm font-medium ml-2 text-gray-300">
                         {selectedContainer.customerName}
                       </span>
                     </div>
@@ -1433,24 +1414,24 @@ const testEmailSending = async () => {
               </div>
 
               <div>
-                <p className="text-sm text-gray-500 mb-2">Container Stats</p>
+                <p className="text-sm text-gray-400 mb-2">Container Stats</p>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 rounded-lg p-3 text-center">
-                    <p className="text-xs text-gray-600">Uptime</p>
-                    <p className="text-lg font-bold text-blue-600">
+                  <div className="bg-blue-900/20 rounded-lg p-3 text-center border border-blue-700/30">
+                    <p className="text-xs text-gray-400">Uptime</p>
+                    <p className="text-lg font-bold text-blue-400">
                       {selectedContainer.uptime || "N/A"}
                     </p>
                   </div>
-                  <div className="bg-red-50 rounded-lg p-3 text-center">
-                    <p className="text-xs text-gray-600">Alerts</p>
-                    <p className="text-lg font-bold text-red-600">
+                  <div className="bg-red-900/20 rounded-lg p-3 text-center border border-red-700/30">
+                    <p className="text-xs text-gray-400">Alerts</p>
+                    <p className="text-lg font-bold text-red-400">
                       {selectedContainer.alerts || 0}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t space-y-3">
+              <div className="pt-4 border-t border-gray-700 space-y-3">
                 <button
                   onClick={() => {
                     resetUserPassword(
@@ -1468,7 +1449,7 @@ const testEmailSending = async () => {
                     setSelectedContainer(null);
                     setShowAddModal(true);
                   }}
-                  className="w-full border border-blue-600 text-blue-600 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all"
+                  className="w-full border border-blue-600 text-blue-400 py-3 rounded-xl font-semibold hover:bg-blue-900/20 transition-all"
                 >
                   Duplicate Container
                 </button>
@@ -1477,6 +1458,9 @@ const testEmailSending = async () => {
           </div>
         </div>
       )}
+      
+      {/* Footer Developer */}
+      <DeveloperFooter />
     </div>
   );
 };

@@ -6,6 +6,7 @@ import {
   CheckCircle, Users, Battery, Wifi
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import DeveloperFooter from '../component/developerFooter';
 
 const ThermoSafeHome = () => {
   const navigate = useNavigate();
@@ -103,7 +104,7 @@ const ThermoSafeHome = () => {
     // Double clear before navigating to login
     localStorage.removeItem('thermosafe_user');
     sessionStorage.clear();
-    navigate('/admin');
+    navigate('/login');
   };
   
 
@@ -336,6 +337,9 @@ const ThermoSafeHome = () => {
             </div>
           </div>
         </div>
+        {/* Footer Developer */}
+<DeveloperFooter/>
+
       </footer>
     </div>
   );

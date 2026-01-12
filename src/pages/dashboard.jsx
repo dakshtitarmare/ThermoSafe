@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { toast, Toaster } from 'react-hot-toast';
+import DeveloperFooter from '../component/developerFooter';
 
 // Backend API URLs
 const BACKEND_URL = "https://c-mrbackend.vercel.app";
@@ -738,7 +739,8 @@ ThermoSafe Team
   className="sticky top-0 bg-gray-800/80 backdrop-blur-lg border-b border-gray-700/50 z-50 px-4 sm:px-6 py-3 sm:py-4"
 >
   <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3" 
+      onClick={() => (window.location.href = "/")}>
       <div className="relative">
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-lg blur opacity-30"></div>
         <div className="relative bg-gray-800 rounded-lg px-3 sm:px-4 py-1 sm:py-2">
@@ -1194,6 +1196,9 @@ ThermoSafe Team
             <span className="hidden sm:inline">•</span>
             <span>System Time: {currentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
           </div>
+          {/* Footer Developer */}
+<DeveloperFooter/>
+
         </motion.footer>
       </main>
     </div>

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Toaster, toast } from 'react-hot-toast';
 import { Mail, Lock, LogIn, Shield, Thermometer, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
-import DeveloperFooter from '../component/developerFooter';
+import { FaLinkedin } from "react-icons/fa"
+import DeveloperFooter from "../component/developerFooter";
 
-const Login = () => {
+const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -265,152 +266,51 @@ const Login = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="w-full max-w-md"
         >
-          <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-lg border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl">
-            <div className="text-center mb-8">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Shield className="w-6 h-6 text-blue-400" />
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-100">Secure Login</h2>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Enter your credentials to access the dashboard
-              </p>
-            </div>
+         <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-lg border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl">
+  <div className="text-center mb-8">
+    <div className="flex items-center justify-center gap-2 mb-3">
+      <Shield className="w-6 h-6 text-blue-400" />
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-100">
+        Admin Access Required
+      </h2>
+    </div>
+    <p className="text-gray-400 text-sm">
+      This dashboard is restricted. Please contact the developer for access.
+    </p>
+  </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              {/* Email Input */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                  <Mail className="w-4 h-4 text-blue-400" />
-                  Email Address
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@thermosafe.com"
-                    className="w-full px-4 py-3 pl-11 bg-gray-900/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    disabled={loading}
-                  />
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                </div>
-              </div>
+  {/* Contact Card */}
+  <div className="bg-gray-900/60 border border-gray-700/50 rounded-xl p-5 space-y-4">
+    {/* Email */}
+    <div className="flex items-center gap-3">
+      <Mail className="w-5 h-5 text-blue-400" />
+      <a
+        href="mailto:devdakshtit@gcoea.ac.in"
+        className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+      >
+        devdakshtit@gcoea.ac.in
+      </a>
+    </div>
 
-              {/* Password Input */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                  <Lock className="w-4 h-4 text-blue-400" />
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full px-4 py-3 pl-11 pr-11 bg-gray-900/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    disabled={loading}
-                  />
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-                {/* <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="remember"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded bg-gray-900 border-gray-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900"
-                    />
-                    <label htmlFor="remember" className="text-xs text-gray-400">
-                      Remember me
-                    </label>
-                  </div>
-                  <button
-                    type="button"
-                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                    onClick={() => toast.info('Contact admin to reset password', { icon: '📧' })}
-                  >
-                    Forgot password?
-                  </button>
-                </div> */}
-              </div>
+    {/* LinkedIn */}
+    <div className="flex items-center gap-3">
+      <FaLinkedin className="w-5 h-5 text-blue-500" />
+      <a
+        href="https://www.linkedin.com/in/dakshtitarmare/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+      >
+        Connect on LinkedIn
+      </a>
+    </div>
+  </div>
 
-              {/* Demo Credentials Info */}
-              {/* <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-blue-300 font-medium">Demo Credentials</p>
-                    <p className="text-xs text-blue-400 mt-1">
-                      Email: admin@gamil.com
-                      <br />
-                      Password: demo123
-                    </p>
-                  </div>
-                </div>
-              </div> */}
+{/* Footer Developer */}
+<DeveloperFooter/>
 
-              {/* Login Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 rounded-lg font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Authenticating...</span>
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-5 h-5" />
-                    <span>Login to Dashboard</span>
-                  </>
-                )}
-              </motion.button>
 
-              {/* Demo Button */}
-              {/* <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="button"
-                onClick={handleDemoLogin}
-                disabled={loading}
-                className="w-full py-3 px-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700 rounded-lg font-medium text-gray-300 transition-all duration-300 flex items-center justify-center gap-2"
-              >
-                <CheckCircle className="w-5 h-5 text-emerald-400" />
-                <span>Use Demo Credentials</span>
-              </motion.button> */}
-            </form>
-
-            {/* Database Connection Status */}
-            <div className="mt-8 pt-6 border-t border-gray-700/30">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                  <span className="text-xs text-gray-400">Firebase Connection</span>
-                </div>
-                <span className="text-xs text-emerald-400 font-medium">Ready</span>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Authenticating against Firebase Realtime Database
-              </p>
-            </div>
-          </div>
+</div>
         </motion.div>
 
         {/* Footer */}
@@ -426,13 +326,10 @@ const Login = () => {
           <p className="text-xs text-gray-600 mt-1">
             Made with ❤️ for IoT Temperature Monitoring
           </p>
-          {/* Footer Developer */}
-<DeveloperFooter/>
-
         </motion.footer>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default AdminLogin;
